@@ -1,0 +1,187 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- Logo Section -->
+    <div class="logo-container">
+      <div class="logo-box">
+        <svg viewBox="0 0 100 100" class="logo-svg">
+          <rect x="25" y="25" width="50" height="50" rx="10" fill="#f0f4f9" />
+          <path d="M50 32 L32 50 H40 V68 H60 V50 H68 Z" fill="#1e88e5" />
+          <circle cx="50" cy="52" r="4" fill="#ffffff" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Title and Subtitle -->
+    <h2 class="title">Yeni Kayıt Oluştur</h2>
+    <p class="subtitle">UrbanEstate Territorial Insight System'e katılın.</p>
+
+    <!-- Register Form -->
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="login-form">
+      
+      <!-- Full Name Input -->
+      <div class="form-group">
+        <label for="fullName">AD SOYAD</label>
+        <div class="input-wrapper" [class.invalid]="registerForm.get('fullName')?.invalid && registerForm.get('fullName')?.touched">
+          <span class="input-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          </span>
+          <input 
+            type="text" 
+            id="fullName" 
+            formControlName="fullName" 
+            placeholder="Örn: Ahmet Yılmaz"
+            autocomplete="name">
+        </div>
+        <div class="error-msg" *ngIf="registerForm.get('fullName')?.hasError('required') && registerForm.get('fullName')?.touched">
+          Ad Soyad alanı gereklidir.
+        </div>
+      </div>
+
+      <!-- Email Input -->
+      <div class="form-group">
+        <label for="email">E-POSTA ADRESİ</label>
+        <div class="input-wrapper" [class.invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+          <span class="input-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+            </svg>
+          </span>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email" 
+            placeholder="isim@kurum.gov.tr"
+            autocomplete="email">
+        </div>
+        <div class="error-msg" *ngIf="registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched">
+          E-posta adresi gereklidir.
+        </div>
+        <div class="error-msg" *ngIf="registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched">
+          Geçerli bir e-posta adresi giriniz.
+        </div>
+      </div>
+
+      <!-- Password Row ( yan yana) -->
+      <div class="form-row">
+        <!-- Password Column -->
+        <div class="form-group col">
+          <label for="password">ŞİFRE</label>
+          <div class="input-wrapper" [class.invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+            <span class="input-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+              </svg>
+            </span>
+            <input 
+              type="password" 
+              id="password" 
+              formControlName="password" 
+              placeholder="********"
+              autocomplete="new-password">
+          </div>
+          <div class="error-msg" *ngIf="registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched">
+            Şifre gereklidir.
+          </div>
+          <div class="error-msg" *ngIf="registerForm.get('password')?.hasError('pattern') && registerForm.get('password')?.touched">
+            Şifre güvenlik gereksinimlerini karşılamalıdır.
+          </div>
+        </div>
+
+        <!-- Confirm Password Column -->
+        <div class="form-group col">
+          <label for="confirmPassword">ŞİFRE TEKRAR</label>
+          <div class="input-wrapper" [class.invalid]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched">
+            <span class="input-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 15l-3-3 1.41-1.41L11 13.17l4.59-4.59L17 10l-6 6z"/>
+              </svg>
+            </span>
+            <input 
+              type="password" 
+              id="confirmPassword" 
+              formControlName="confirmPassword" 
+              placeholder="********"
+              autocomplete="new-password">
+          </div>
+          <div class="error-msg" *ngIf="registerForm.get('confirmPassword')?.hasError('required') && registerForm.get('confirmPassword')?.touched">
+            Şifre tekrarı gereklidir.
+          </div>
+          <div class="error-msg" *ngIf="registerForm.get('confirmPassword')?.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched">
+            Şifreler uyuşmuyor.
+          </div>
+        </div>
+      </div>
+
+      <!-- Şifre Gereksinimleri Bilgi Kutusu -->
+      <div class="password-requirements-box" *ngIf="registerForm.get('password')?.value">
+        <div class="requirement-item" [class.valid]="passwordRequirements.length">
+          <span class="req-icon">{{ passwordRequirements.length ? '✓' : '•' }}</span>
+          <span>En az 8, en fazla 64 karakter</span>
+        </div>
+        <div class="requirement-item" [class.valid]="passwordRequirements.lowercase">
+          <span class="req-icon">{{ passwordRequirements.lowercase ? '✓' : '•' }}</span>
+          <span>En az bir küçük harf (a-z, Türkçe harfler dahil)</span>
+        </div>
+        <div class="requirement-item" [class.valid]="passwordRequirements.uppercase">
+          <span class="req-icon">{{ passwordRequirements.uppercase ? '✓' : '•' }}</span>
+          <span>En az bir büyük harf (A-Z, Türkçe harfler dahil)</span>
+        </div>
+        <div class="requirement-item" [class.valid]="passwordRequirements.digit">
+          <span class="req-icon">{{ passwordRequirements.digit ? '✓' : '•' }}</span>
+          <span>En az bir rakam (0-9)</span>
+        </div>
+        <div class="requirement-item" [class.valid]="passwordRequirements.special">
+          <span class="req-icon">{{ passwordRequirements.special ? '✓' : '•' }}</span>
+          <span>En az bir özel karakter (!@#$%^&*...)</span>
+        </div>
+        <div class="requirement-item" [class.valid]="passwordRequirements.noSpace">
+          <span class="req-icon">{{ passwordRequirements.noSpace ? '✓' : '•' }}</span>
+          <span>Boşluk içermemeli</span>
+        </div>
+      </div>
+
+      <!-- Terms and Conditions -->
+      <div class="form-options">
+        <label class="remember-me">
+          <input type="checkbox" formControlName="terms">
+          <span class="checkmark"></span>
+          Kullanım koşullarını ve <a href="javascript:void(0)" class="terms-link" (click)="$event.stopPropagation()">gizlilik politikasını</a> kabul ediyorum.
+        </label>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="submit-btn" [disabled]="registerForm.invalid">
+        <span>Kayıt Ol</span>
+        <span class="btn-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 11.58L11.41 16l4.59-4.59L11.41 6.83 10 8.25l2.17 2.17H3v2h9.17L10 14.58z"/>
+          </svg>
+        </span>
+      </button>
+    </form>
+
+    <!-- Sign In Redirect -->
+    <div class="signup-redirect">
+      <span>Zaten bir hesabınız var mı?</span>
+      <a routerLink="/login">Giriş Yap</a>
+    </div>
+  </div>
+
+  <!-- Info Alert Modal -->
+  <div class="modal-overlay" *ngIf="isInfoAlertOpen" (click)="closeInfoAlert()">
+    <div class="modal-card mini" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ infoAlertTitle }}</h3>
+        <button class="modal-close-btn" (click)="closeInfoAlert()">&times;</button>
+      </div>
+      <div class="modal-body custom-dialog-body">
+        <p class="dialog-message">{{ infoAlertMessage }}</p>
+      </div>
+      <div class="modal-actions dialog-actions">
+        <button type="button" class="save-btn" (click)="closeInfoAlert()">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>

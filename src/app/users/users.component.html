@@ -1,0 +1,291 @@
+<div class="dashboard-wrapper">
+  
+  <!-- Left Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-box">
+        <svg viewBox="0 0 100 100" class="logo-svg">
+          <rect width="100" height="100" rx="16" fill="#1e88e5" />
+          <path d="M50 24 L22 48 H32 v28 H68 v-28 H78 Z" fill="#ffffff" />
+          <circle cx="50" cy="50" r="6" fill="#1e88e5" />
+        </svg>
+      </div>
+      <div class="sidebar-title-group">
+        <h1 class="sidebar-title">Taşınmaz Portalı</h1>
+        <p class="sidebar-subtitle">CBS Yönetim Paneli</p>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+        </span>
+        <span>Mülklerim</span>
+      </a>
+      <a routerLink="/dashboard" class="nav-item">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+        </span>
+        <span>Mekansal Analiz</span>
+      </a>
+      
+      <!-- Sadece Adminlerin Görebileceği Sistem Logları Sekmesi -->
+      <a *ngIf="authService.isAdmin()" routerLink="/logs" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+          </svg>
+        </span>
+        <span>Sistem Logları</span>
+      </a>
+
+      <!-- Sadece Adminlerin Görebileceği Kullanıcı Yönetimi Sekmesi -->
+      <a *ngIf="authService.isAdmin()" routerLink="/users" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </span>
+        <span>Kullanıcı Yönetimi</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content Panel -->
+  <main class="main-panel">
+    
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="navbar-left">
+        <span class="nav-map-icon blue">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </span>
+        <h2 class="navbar-title">Kullanıcı Yönetimi</h2>
+      </div>
+      <div class="navbar-right">
+        <button class="logout-btn-header" (click)="logout()" title="Çıkış Yap" style="background: none; border: 1px solid #cbd5e1; color: #475569; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: 8px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+          </svg>
+          <span>Çıkış Yap</span>
+        </button>
+        <button class="profile-btn" aria-label="Kullanıcı Profili">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      
+      <!-- Informative Subheader Panel -->
+      <div class="info-panel">
+        <p>Sistemde kayıtlı tüm kullanıcıların listelenmesi, rollerinin güncellenmesi (Admin / Standart Kullanıcı), şifre yenilenmesi ve hesaplarının silinmesi işlemlerini bu ekrandan gerçekleştirebilirsiniz.</p>
+      </div>
+
+      <!-- Users Data Table Card -->
+      <section class="card table-card">
+        <div class="card-header">
+          <div class="header-left">
+            <span class="card-icon blue">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+              </svg>
+            </span>
+            <h3>Sistem Kullanıcıları Listesi</h3>
+          </div>
+          <div class="header-right-actions">
+            <!-- Add New User Button -->
+            <button class="add-user-btn" (click)="openAddModal()">
+              <span>+ Yeni Kullanıcı Ekle</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Table View -->
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Kullanıcı Adı</th>
+                <th>E-posta Adresi</th>
+                <th>Rol Yetkisi</th>
+                <th style="text-align: center; width: 180px;">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of users; let idx = index">
+                <td>{{ idx + 1 }}</td>
+                <td class="bold-slate">{{ u.kullaniciAdi }}</td>
+                <td>{{ u.email }}</td>
+                <td>
+                  <!-- Rol yetkisine göre renk rozetleri -->
+                  <span class="role-badge" [class.admin]="u.rol === 'Admin'" [class.user]="u.rol !== 'Admin'">
+                    {{ u.rol === 'Admin' ? 'Sistem Yöneticisi (Admin)' : 'Standart Kullanıcı (User)' }}
+                  </span>
+                </td>
+                <td class="action-cell-center" style="text-align: center;">
+                  <button class="edit-btn-action" (click)="openEditModal(u)" title="Düzenle">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                    <span>Düzenle</span>
+                  </button>
+                  <button class="delete-btn-action" (click)="deleteUser(u.id!)" title="Sil">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                      <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                    <span>Sil</span>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="users.length === 0 && !isLoading">
+                <td colspan="5" class="no-data">Sistemde kayıtlı kullanıcı bulunamadı.</td>
+              </tr>
+              <tr *ngIf="isLoading">
+                <td colspan="5" class="loading-state">
+                  <div class="spinner-loader"></div>
+                  <span>Kullanıcı listesi yükleniyor...</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="total-count">Toplam {{ users.length }} kullanıcı hesabı listelendi</span>
+        </div>
+      </section>
+      
+    </div>
+  </main>
+</div>
+
+<!-- Ekleme ve Düzenleme Modal Popup Ekranı -->
+<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-card custom-user-modal" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header dark-header">
+      <h3>{{ isEditMode ? 'Kullanıcı Düzenle & Rol Değiştir' : 'Yeni Kullanıcı Hesabı Ekle' }}</h3>
+      <button class="modal-close-btn" (click)="closeModal()">&times;</button>
+    </div>
+
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+      <div class="modal-body custom-dialog-body">
+        
+        <!-- Kullanıcı Adı -->
+        <div class="form-group">
+          <label for="modalKullaniciAdi">AD SOYAD / KULLANICI ADI</label>
+          <div class="input-wrapper" [class.invalid]="userForm.get('kullaniciAdi')?.invalid && userForm.get('kullaniciAdi')?.touched">
+            <input 
+              type="text" 
+              id="modalKullaniciAdi" 
+              formControlName="kullaniciAdi" 
+              placeholder="Örn: Ahmet Yılmaz">
+          </div>
+          <div class="error-msg" *ngIf="userForm.get('kullaniciAdi')?.hasError('required') && userForm.get('kullaniciAdi')?.touched">
+            Kullanıcı adı gereklidir.
+          </div>
+          <div class="error-msg" *ngIf="userForm.get('kullaniciAdi')?.hasError('minlength') && userForm.get('kullaniciAdi')?.touched">
+            En az 3 karakter olmalıdır.
+          </div>
+        </div>
+
+        <!-- E-posta -->
+        <div class="form-group">
+          <label for="modalEmail">E-POSTA ADRESİ</label>
+          <div class="input-wrapper" [class.invalid]="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+            <input 
+              type="email" 
+              id="modalEmail" 
+              formControlName="email" 
+              placeholder="isim@kurum.gov.tr">
+          </div>
+          <div class="error-msg" *ngIf="userForm.get('email')?.hasError('required') && userForm.get('email')?.touched">
+            E-posta adresi gereklidir.
+          </div>
+          <div class="error-msg" *ngIf="userForm.get('email')?.hasError('email') && userForm.get('email')?.touched">
+            Geçerli bir e-posta adresi giriniz.
+          </div>
+        </div>
+
+        <!-- Şifre -->
+        <div class="form-group">
+          <label for="modalSifre">ŞİFRE {{ isEditMode ? '(Değiştirmek İstemiyorsanız Boş Bırakın)' : '' }}</label>
+          <div class="input-wrapper" [class.invalid]="userForm.get('sifre')?.invalid && userForm.get('sifre')?.touched">
+            <input 
+              type="password" 
+              id="modalSifre" 
+              formControlName="sifre" 
+              placeholder="********">
+          </div>
+          <div class="error-msg" *ngIf="userForm.get('sifre')?.hasError('required') && userForm.get('sifre')?.touched">
+            Yeni şifre alanı zorunludur.
+          </div>
+          <div class="error-msg" *ngIf="userForm.get('sifre')?.hasError('minlength') && userForm.get('sifre')?.touched">
+            Şifre en az 6 karakter olmalıdır.
+          </div>
+        </div>
+
+        <!-- Rol Seçimi -->
+        <div class="form-group">
+          <label for="modalRol">YETKİLENDİRME ROLÜ</label>
+          <div class="input-wrapper">
+            <select id="modalRol" formControlName="rol">
+              <option value="User">Standart Kullanıcı (User)</option>
+              <option value="Admin">Sistem Yöneticisi (Admin)</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-actions dialog-actions">
+        <button type="button" class="cancel-btn" (click)="closeModal()">Vazgeç</button>
+        <button type="submit" class="save-btn" [disabled]="userForm.invalid">Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Info Alert Modal -->
+<div class="modal-overlay" *ngIf="isInfoAlertOpen" (click)="closeInfoAlert()">
+  <div class="modal-card mini" (click)="$event.stopPropagation()" style="max-width: 400px; width: 100%;">
+    <div class="modal-header dark-header">
+      <h3>{{ infoAlertTitle }}</h3>
+      <button class="modal-close-btn" (click)="closeInfoAlert()">&times;</button>
+    </div>
+    <div class="modal-body custom-dialog-body">
+      <p class="dialog-message" style="margin: 0; font-size: 14px; color: #475569; line-height: 1.5;">{{ infoAlertMessage }}</p>
+    </div>
+    <div class="modal-actions dialog-actions">
+      <button type="button" class="save-btn" (click)="closeInfoAlert()">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Confirm Modal -->
+<div class="modal-overlay" *ngIf="isConfirmModalOpen" (click)="closeConfirmModal()">
+  <div class="modal-card mini" (click)="$event.stopPropagation()" style="max-width: 400px; width: 100%;">
+    <div class="modal-header dark-header">
+      <h3>{{ confirmModalTitle }}</h3>
+      <button class="modal-close-btn" (click)="closeConfirmModal()">&times;</button>
+    </div>
+    <div class="modal-body custom-dialog-body">
+      <p class="dialog-message" style="margin: 0; font-size: 14px; color: #475569; line-height: 1.5;">{{ confirmModalMessage }}</p>
+    </div>
+    <div class="modal-actions dialog-actions">
+      <button type="button" class="cancel-btn" (click)="closeConfirmModal()">İptal</button>
+      <button type="button" class="save-btn" (click)="onConfirmAction()" style="background-color: #ef4444; color: white;">Evet, Sil</button>
+    </div>
+  </div>
+</div>

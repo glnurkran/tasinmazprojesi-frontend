@@ -1,0 +1,536 @@
+<div class="dashboard-wrapper">
+  
+  <!-- Left Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-box">
+        <svg viewBox="0 0 100 100" class="logo-svg">
+          <rect width="100" height="100" rx="16" fill="#1e88e5" />
+          <path d="M50 24 L22 48 H32 v28 H68 v-28 H78 Z" fill="#ffffff" />
+          <circle cx="50" cy="50" r="6" fill="#1e88e5" />
+        </svg>
+      </div>
+      <div class="sidebar-title-group">
+        <h1 class="sidebar-title">Taşınmaz Portalı</h1>
+        <p class="sidebar-subtitle">CBS Yönetim Paneli</p>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+        </span>
+        <span>Mülklerim</span>
+      </a>
+      <a routerLink="/dashboard" class="nav-item">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+        </span>
+        <span>Mekansal Analiz</span>
+      </a>
+      
+      <!-- Sadece Adminlerin Görebileceği Sistem Logları Sekmesi -->
+      <a *ngIf="authService.isAdmin()" routerLink="/logs" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+          </svg>
+        </span>
+        <span>Sistem Logları</span>
+      </a>
+
+      <!-- Sadece Adminlerin Görebileceği Kullanıcı Yönetimi Sekmesi -->
+      <a *ngIf="authService.isAdmin()" routerLink="/users" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </span>
+        <span>Kullanıcı Yönetimi</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content Panel -->
+  <main class="main-panel">
+    
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="navbar-left">
+        <span class="nav-map-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+          </svg>
+        </span>
+        <h2 class="navbar-title">Taşınmaz Yönetim Paneli</h2>
+      </div>
+      <div class="navbar-right">
+        <button class="add-property-btn" (click)="openAddModal()">
+          <span class="btn-plus-icon">+</span>
+          <span>Yeni Taşınmaz Ekle</span>
+        </button>
+        <button class="logout-btn-header" (click)="logout()" title="Çıkış Yap" style="background: none; border: 1px solid #cbd5e1; color: #475569; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: 8px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+          </svg>
+          <span>Çıkış Yap</span>
+        </button>
+        <button class="profile-btn" aria-label="Kullanıcı Profili">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      
+      <!-- Informative Subheader Panel -->
+      <div class="info-panel">
+        <p>Sistemde kayıtlı taşınmazların harita ve liste üzerindeki yönetimi. Bölge bazlı analizler ve mülkiyet detaylarını buradan takip edebilirsiniz.</p>
+      </div>
+
+      <!-- Grid Cards Layout -->
+      <div class="grid-layout">
+        
+        <!-- Interactive OpenLayers Map Card -->
+        <section class="card map-card">
+          <div class="card-header">
+            <div class="header-left">
+              <span class="card-icon blue">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+                </svg>
+              </span>
+              <h3>Taşınmaz Harita Görünümü</h3>
+            </div>
+            <div class="map-controls-top-right">
+              <button class="map-tool-btn" (click)="zoomIn()" title="Yakınlaş" aria-label="Yakınlaş">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+              </button>
+              <button class="map-tool-btn" (click)="zoomOut()" title="Uzaklaş" aria-label="Uzaklaş">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M19 13H5v-2h14v2z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <div class="map-canvas-container">
+            <!-- OpenLayers Target Element -->
+            <div id="main-map" class="map-element-canvas"></div>
+
+            <!-- Settings panel button on left -->
+            <button class="map-settings-btn" (click)="resetMapView()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+              </svg>
+              <span>Türkiye Odakla</span>
+            </button>
+
+            <!-- Floating Selected Popup Panel -->
+            <div class="map-popup-card" *ngIf="selectedProperty">
+              <div class="popup-header">
+                <h4>{{ selectedProperty.isim || 'SEÇİLİ TAŞINMAZ' }}</h4>
+                <button class="popup-close-btn" (click)="closeMapPopup()">&times;</button>
+              </div>
+              <div class="popup-body">
+                <div class="popup-info-row">
+                  <span class="popup-label">İL / İLÇE</span>
+                  <span class="popup-value">{{ selectedProperty.province }} / {{ selectedProperty.district }}</span>
+                </div>
+                <div class="popup-info-row">
+                  <span class="popup-label">MAHALLE</span>
+                  <span class="popup-value">{{ selectedProperty.neighborhood }}</span>
+                </div>
+                <div class="popup-info-row">
+                  <span class="popup-label">ADRES</span>
+                  <span class="popup-value popup-address">{{ selectedProperty.address }}</span>
+                </div>
+                <div class="popup-info-row inline">
+                  <div>
+                    <span class="popup-label">ADA / PARSEL</span>
+                    <span class="popup-value bold-blue">{{ selectedProperty.ada }} / {{ selectedProperty.parsel }}</span>
+                  </div>
+                  <div>
+                    <span class="popup-label">NİTELİK</span>
+                    <span class="badge" [class]="selectedProperty.nitelik">{{ selectedProperty.nitelik }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="popup-footer">
+                <button class="popup-action-btn" (click)="viewDetails(selectedProperty)">DETAYLARI GÖR</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Real Estate Data Table Card -->
+        <section class="card table-card">
+          <div class="card-header">
+            <div class="header-left">
+              <span class="card-icon orange">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path d="M4 14h6v-2H4v2zm0-4h6V8H4v2zm0 8h6v-2H4v2zm10-4h6v-2h-6v2zm0-4h6V8h-6v2zm0 8h6v-2h-6v2zM2 4v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2zm18 16H4V4h16v16z"/>
+                </svg>
+              </span>
+              <h3>Taşınmaz Listesi</h3>
+            </div>
+            <div class="header-right-actions">
+              <!-- Excel / PDF Export Buttons -->
+              <div class="export-actions-group">
+                <button class="export-btn excel" (click)="exportToExcel()" [disabled]="isExportingExcel" title="Excel Olarak İndir">
+                  <svg *ngIf="!isExportingExcel" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2.83 14L14 12.83 11.83 17H9.24l3.52-5-3.52-5h2.59L14 11.17 16.17 7h2.59l-3.52 5 3.52 5h-2.59z" />
+                  </svg>
+                  <span *ngIf="isExportingExcel" class="btn-spinner"></span>
+                  <span>{{ isExportingExcel ? 'Yükleniyor...' : 'Excel İndir' }}</span>
+                </button>
+
+                <button class="export-btn pdf" (click)="exportToPdf()" [disabled]="isExportingPdf" title="PDF Olarak İndir">
+                  <svg *ngIf="!isExportingPdf" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                    <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4.5-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zm-8 1.5h-1v-2h1v2zm5 2h-1v-3h1v3zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z" />
+                  </svg>
+                  <span *ngIf="isExportingPdf" class="btn-spinner"></span>
+                  <span>{{ isExportingPdf ? 'Yükleniyor...' : 'PDF İndir' }}</span>
+                </button>
+              </div>
+
+              <div class="search-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="search-icon">
+                  <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+                <input 
+                  type="text" 
+                  placeholder="Listede ara..." 
+                  [(ngModel)]="searchQuery"
+                  aria-label="Listede ara">
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>İşlemler</th>
+                  <th>Taşınmaz Adı</th>
+                  <th>İl/İlçe</th>
+                  <th>Mahalle</th>
+                  <th>Ada/Parsel</th>
+                  <th>Nitelik</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of filteredProperties; let i = index" [class.highlighted]="selectedProperty?.id === p.id">
+                  <td>{{ i + 1 }}</td>
+                  <td class="action-cell">
+                    <button 
+                      class="action-btn map" 
+                      (click)="selectProperty(p)" 
+                      title="Haritada Göster"
+                      aria-label="Haritada göster">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                      </svg>
+                    </button>
+                    <button 
+                      class="action-btn edit" 
+                      (click)="openEditModal(p)" 
+                      title="Düzenle"
+                      aria-label="Düzenle">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                      </svg>
+                    </button>
+                    <button 
+                      class="action-btn delete" 
+                      (click)="openDeleteConfirm(p)" 
+                      title="Sil"
+                      aria-label="Sil">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                      </svg>
+                    </button>
+                  </td>
+                  <td class="bold-text" style="font-weight: 600; color: #0f172a;">{{ p.isim }}</td>
+                  <td>{{ p.province }} / {{ p.district }}</td>
+                  <td>{{ p.neighborhood }}</td>
+                  <td>
+                    <span class="ada-parsel-badge">{{ p.ada }} / {{ p.parsel }}</span>
+                  </td>
+                  <td>
+                    <span class="badge" [class]="p.nitelik">{{ p.nitelik }}</span>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredProperties.length === 0">
+                  <td colspan="6" class="no-records">Eşleşen kayıt bulunamadı.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Table Footer Pagination -->
+          <div class="table-footer">
+            <span class="total-count">Toplam {{ filteredProperties.length }} kayıt gösteriliyor</span>
+            <div class="pagination">
+              <button class="pag-btn prev" disabled>Önceki</button>
+              <button class="pag-btn active">1</button>
+              <button class="pag-btn next" disabled>Sonraki</button>
+            </div>
+          </div>
+        </section>
+        
+      </div>
+      
+    </div>
+
+    <!-- Main Footer Links -->
+    <footer class="main-footer">
+      <div class="footer-left">
+        <p>&copy; 2026 Taşınmaz Portalı Analiz Paneli. Tüm hakları saklıdır.</p>
+      </div>
+      <div class="footer-right">
+        <a href="javascript:void(0)">Documentation</a>
+        <a href="javascript:void(0)">GIS Support</a>
+        <a href="javascript:void(0)">API Status</a>
+        <a href="javascript:void(0)">Privacy</a>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Add/Edit Real Estate Dialog Modal -->
+  <div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header dark-header">
+        <div class="modal-title-left">
+          <span>✏️</span>
+          <span>📝</span>
+          <h3>{{ isEditMode ? 'Taşınmaz Bilgilerini Düzenle' : 'Yeni Taşınmaz Ekle' }}</h3>
+        </div>
+        <button class="modal-close-btn white" (click)="closeModal()">&times;</button>
+      </div>
+      
+      <form [formGroup]="propertyForm" (ngSubmit)="onSubmit()" class="modal-form">
+        <div class="modal-form-body">
+          <div class="form-grid">
+          
+          <!-- Taşınmaz Adı Input -->
+          <div class="form-group full-width">
+            <label for="isim">TAŞINMAZ ADI</label>
+            <input 
+              type="text" 
+              id="isim" 
+              formControlName="isim" 
+              placeholder="Örn: Çankaya Konut Projesi">
+            <div class="error-msg" *ngIf="propertyForm.get('isim')?.hasError('required') && propertyForm.get('isim')?.touched">
+              Taşınmaz adı gereklidir.
+            </div>
+            <div class="error-msg" *ngIf="propertyForm.get('isim')?.hasError('minlength') && propertyForm.get('isim')?.touched">
+              En az 3 karakter olmalıdır.
+            </div>
+          </div>
+          
+          <!-- Province Dropdown Select -->
+          <div class="form-group">
+            <label for="province">İL</label>
+            <select id="province" formControlName="province">
+              <option value="" disabled>İl Seçiniz</option>
+              <option *ngFor="let il of illerList" [value]="il.ilAdi">{{ il.ilAdi }}</option>
+            </select>
+            <div class="error-msg" *ngIf="propertyForm.get('province')?.invalid && propertyForm.get('province')?.touched">
+              İl seçilmesi zorunludur.
+            </div>
+          </div>
+
+          <!-- District Dropdown Select -->
+          <div class="form-group">
+            <label for="district">İLÇE</label>
+            <select id="district" formControlName="district">
+              <option value="" disabled>İlçe Seçiniz</option>
+              <option *ngFor="let ilce of filteredIlceler" [value]="ilce.ilceAdi">{{ ilce.ilceAdi }}</option>
+            </select>
+            <div class="error-msg" *ngIf="propertyForm.get('district')?.invalid && propertyForm.get('district')?.touched">
+              İlçe seçilmesi zorunludur.
+            </div>
+          </div>
+
+          <!-- Neighborhood Dropdown Select -->
+          <div class="form-group">
+            <label for="neighborhood">MAHALLE</label>
+            <select id="neighborhood" formControlName="neighborhood">
+              <option value="" disabled>Mahalle Seçiniz</option>
+              <option *ngFor="let mah of filteredMahalleler" [value]="mah.mahalleAdi">{{ mah.mahalleAdi }}</option>
+            </select>
+            <div class="error-msg" *ngIf="propertyForm.get('neighborhood')?.invalid && propertyForm.get('neighborhood')?.touched">
+              Mahalle alanı gereklidir.
+            </div>
+          </div>
+
+          <!-- Nitelik Dropdown Select -->
+          <div class="form-group">
+            <label for="nitelik">NİTELİK</label>
+            <select id="nitelik" formControlName="nitelik">
+              <option value="Arsa">Arsa</option>
+              <option value="Arazi">Arazi</option>
+              <option value="Tarla">Tarla</option>
+              <option value="Bağ">Bağ</option>
+              <option value="Bahçe">Bahçe</option>
+              <option value="Zeytinlik">Zeytinlik</option>
+              <option value="Müstakil Ev">Müstakil Ev</option>
+              <option value="Daire">Daire</option>
+              <option value="Bina">Bina</option>
+              <option value="İş Yeri">İş Yeri</option>
+              <option value="Ofis">Ofis</option>
+              <option value="Fabrika">Fabrika</option>
+              <option value="Atölye">Atölye</option>
+              <option value="Depo">Depo</option>
+              <option value="Otopark">Otopark</option>
+            </select>
+          </div>
+
+          <!-- Ada Input -->
+          <div class="form-group">
+            <label for="ada">ADA</label>
+            <input 
+              type="text" 
+              id="ada" 
+              formControlName="ada" 
+              placeholder="Örn: 2540">
+            <div class="error-msg" *ngIf="propertyForm.get('ada')?.hasError('required') && propertyForm.get('ada')?.touched">
+              Ada alanı gereklidir.
+            </div>
+            <div class="error-msg" *ngIf="propertyForm.get('ada')?.hasError('pattern') && propertyForm.get('ada')?.touched">
+              Sadece sayı olmalıdır.
+            </div>
+          </div>
+
+          <!-- Parsel Input -->
+          <div class="form-group">
+            <label for="parsel">PARSEL</label>
+            <input 
+              type="text" 
+              id="parsel" 
+              formControlName="parsel" 
+              placeholder="Örn: 4">
+            <div class="error-msg" *ngIf="propertyForm.get('parsel')?.hasError('required') && propertyForm.get('parsel')?.touched">
+              Parsel alanı gereklidir.
+            </div>
+            <div class="error-msg" *ngIf="propertyForm.get('parsel')?.hasError('pattern') && propertyForm.get('parsel')?.touched">
+              Sadece sayı olmalıdır.
+            </div>
+          </div>
+
+          <!-- Latitude Input -->
+          <div class="form-group">
+            <label for="lat">ENLEM (LAT)</label>
+            <input 
+              type="text" 
+              id="lat" 
+              formControlName="lat" 
+              placeholder="Örn: 39.9208">
+            <div class="error-msg" *ngIf="propertyForm.get('lat')?.hasError('required') && propertyForm.get('lat')?.touched">
+              Enlem bilgisi zorunludur.
+            </div>
+          </div>
+
+          <!-- Longitude Input -->
+          <div class="form-group">
+            <label for="lng">BOYLAM (LONG)</label>
+            <input 
+              type="text" 
+              id="lng" 
+              formControlName="lng" 
+              placeholder="Örn: 32.8541">
+            <div class="error-msg" *ngIf="propertyForm.get('lng')?.hasError('required') && propertyForm.get('lng')?.touched">
+              Boylam bilgisi zorunludur.
+            </div>
+          </div>
+
+          <!-- Address Input -->
+          <div class="form-group full-width">
+            <label for="address">AÇIK ADRES</label>
+            <textarea 
+              id="address" 
+              formControlName="address" 
+              placeholder="Örn: Caferağa Mah. Moda Caddesi No:74 Kadıköy/İstanbul"
+              rows="2"></textarea>
+            <div class="error-msg" *ngIf="propertyForm.get('address')?.invalid && propertyForm.get('address')?.touched">
+              Açık adres alanı gereklidir.
+            </div>
+          </div>
+
+          <!-- Mini Map Interactive Coordinate Panel (OpenLayers) -->
+          <div class="form-group full-width">
+            <label>HARİTADAN KONUM SEÇİN (Tıklayarak koordinatları güncelleyebilirsiniz)</label>
+            <div class="modal-mini-map-container">
+              <div id="mini-map" class="modal-mini-map-ol"></div>
+              <span class="mini-map-instruction">Konum Seçmek İçin Haritaya Tıklayın</span>
+            </div>
+          </div>
+
+          </div>
+        </div>
+
+        <div class="modal-footer-grey">
+          <button type="button" class="btn-cancel-modal" (click)="closeModal()">İptal</button>
+          <button type="submit" class="btn-save-modal">{{ isEditMode ? 'Değişiklikleri Kaydet' : 'Ekle' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Custom Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="isDeleteConfirmOpen" (click)="closeDeleteConfirm()">
+    <div class="modal-card mini delete-confirm-card" (click)="$event.stopPropagation()">
+      
+      <div class="warning-icon-wrapper">
+        <div class="warning-icon-circle">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="#c2410c">
+            <path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V8h2v8z"/>
+          </svg>
+        </div>
+      </div>
+      
+      <p class="delete-confirm-question">Bu taşınmazı silmek istediğinize emin misiniz?</p>
+      
+      <div class="property-summary-box" *ngIf="propertyToDelete">
+        <span class="summary-label">TAŞINMAZ ÖZETİ</span>
+        <p class="summary-text"><strong>{{ propertyToDelete.isim }}</strong> ({{ propertyToDelete.province }}, {{ propertyToDelete.district }} - Ada: {{ propertyToDelete.ada }}, Parsel: {{ propertyToDelete.parsel }})</p>
+        <span class="summary-subtext">Bu işlem geri alınamaz ve tüm ilişkili veriler silinecektir.</span>
+      </div>
+      
+      <div class="delete-actions-vertical">
+        <button type="button" class="btn-confirm-delete" (click)="confirmDelete()">Evet, Sil</button>
+        <button type="button" class="btn-cancel-delete" (click)="closeDeleteConfirm()">Hayır, İptal Et</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Info Alert Modal -->
+  <div class="modal-overlay" *ngIf="isInfoAlertOpen" (click)="closeInfoAlert()">
+    <div class="modal-card mini" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ infoAlertTitle }}</h3>
+        <button class="modal-close-btn" (click)="closeInfoAlert()">&times;</button>
+      </div>
+      <div class="modal-body custom-dialog-body">
+        <p class="dialog-message">{{ infoAlertMessage }}</p>
+      </div>
+      <div class="modal-actions dialog-actions">
+        <button type="button" class="save-btn" (click)="closeInfoAlert()">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+</div>

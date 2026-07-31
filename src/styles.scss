@@ -1,1 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "ol/ol.css";
+
 /* You can add global styles to this file, and also import other style files */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+/* Global Custom Modal Styles for Alerts */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 2000; /* Ensure overlay is above all dialogs */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 24px;
+      color: #94a3b8;
+      cursor: pointer;
+      line-height: 1;
+
+      &:hover {
+        color: #475569;
+      }
+    }
+  }
+
+  .modal-actions {
+    padding: 20px 24px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: auto;
+
+    button {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      height: 42px;
+      padding: 0 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .save-btn {
+      background-color: #1e88e5;
+      border: none;
+      color: #ffffff;
+
+      &:hover:not(:disabled) {
+        background-color: #1565c0;
+      }
+
+      &:disabled {
+        background-color: #cbd5e1;
+        color: #94a3b8;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+.modal-card.mini {
+  max-width: 380px;
+
+  .custom-dialog-body {
+    padding: 16px 24px;
+    
+    .dialog-message {
+      margin: 0;
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+  }
+
+  .dialog-actions {
+    padding: 16px 24px;
+    margin-top: 0;
+    border-top: none;
+  }
+}

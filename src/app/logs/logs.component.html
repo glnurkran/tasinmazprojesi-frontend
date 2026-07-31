@@ -1,0 +1,239 @@
+<div class="dashboard-wrapper">
+  
+  <!-- Left Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-box">
+        <svg viewBox="0 0 100 100" class="logo-svg">
+          <rect width="100" height="100" rx="16" fill="#1e88e5" />
+          <path d="M50 24 L22 48 H32 v28 H68 v-28 H78 Z" fill="#ffffff" />
+          <circle cx="50" cy="50" r="6" fill="#1e88e5" />
+        </svg>
+      </div>
+      <div class="sidebar-title-group">
+        <h1 class="sidebar-title">Taşınmaz Portalı</h1>
+        <p class="sidebar-subtitle">CBS Yönetim Paneli</p>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+        </span>
+        <span>Mülklerim</span>
+      </a>
+      <a routerLink="/dashboard" class="nav-item">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+        </span>
+        <span>Mekansal Analiz</span>
+      </a>
+      
+      <!-- Sadece Adminlerin Görebileceği Sistem Logları Sekmesi -->
+      <a *ngIf="authService.isAdmin()" routerLink="/logs" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+          </svg>
+        </span>
+        <span>Sistem Logları</span>
+      </a>
+
+      <!-- Sadece Adminlerin Görebileceği Kullanıcı Yönetimi Sekmesi -->
+      <a *ngIf="authService.isAdmin()" routerLink="/users" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </span>
+        <span>Kullanıcı Yönetimi</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content Panel -->
+  <main class="main-panel">
+    
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="navbar-left">
+        <span class="nav-map-icon orange">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+          </svg>
+        </span>
+        <h2 class="navbar-title">Sistem İşlem Logları</h2>
+      </div>
+      <div class="navbar-right">
+        <button class="logout-btn-header" (click)="logout()" title="Çıkış Yap" style="background: none; border: 1px solid #cbd5e1; color: #475569; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: 8px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+          </svg>
+          <span>Çıkış Yap</span>
+        </button>
+        <button class="profile-btn" aria-label="Kullanıcı Profili">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="page-content">
+      
+      <!-- Informative Subheader Panel -->
+      <div class="info-panel">
+        <p>Sistem genelinde gerçekleştirilen kullanıcı girişleri, taşınmaz ekleme, güncelleme ve silme gibi işlemleri bu ekrandan filtreleyerek takip edebilirsiniz.</p>
+      </div>
+
+      <!-- Filter Controls Panel -->
+      <section class="card filter-card">
+        <div class="card-header">
+          <div class="header-left">
+            <span class="card-icon blue">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+              </svg>
+            </span>
+            <h3>Arama ve Filtreleme Seçenekleri</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="filter-grid">
+            <!-- User Filter -->
+            <div class="filter-group">
+              <label for="userFilter">İşlem Yapan Kullanıcı</label>
+              <select id="userFilter" [(ngModel)]="selectedUserId">
+                <option [ngValue]="null">Tüm Kullanıcılar</option>
+                <option *ngFor="let u of users" [value]="u.id">{{ u.email }} ({{ u.kullaniciAdi }})</option>
+              </select>
+            </div>
+
+            <!-- Operation / Log Type Filter -->
+            <div class="filter-group">
+              <label for="opFilter">İşlem Türü</label>
+              <select id="opFilter" [(ngModel)]="selectedIslem">
+                <option value="">Hepsi (Tüm İşlemler)</option>
+                <option value="Başarılı Giriş">Başarılı Giriş</option>
+                <option value="Başarısız Giriş Denemesi">Başarısız Giriş</option>
+                <option value="Çıkış">Çıkış (Logout)</option>
+                <option value="Taşınmaz Ekleme">Taşınmaz Ekleme</option>
+                <option value="Taşınmaz Güncelleme">Taşınmaz Güncelleme</option>
+                <option value="Taşınmaz Silme">Taşınmaz Silme</option>
+                <option value="Toplu Taşınmaz Silme">Toplu Taşınmaz Silme</option>
+                <option value="Taşınmaz Fotoğrafı Yükleme">Taşınmaz Fotoğrafı Yükleme</option>
+                <option value="Taşınmaz Fotoğrafı Silme">Taşınmaz Fotoğrafı Silme</option>
+                <option value="Excel'den Taşınmaz Aktarma">Excel'den Taşınmaz Aktarma</option>
+                <option value="Taşınmaz Excel Dışa Aktarma">Taşınmaz Excel Dışa Aktarma</option>
+                <option value="Taşınmaz PDF Dışa Aktarma">Taşınmaz PDF Dışa Aktarma</option>
+                <option value="Kullanıcı Ekleme">Kullanıcı Ekleme</option>
+                <option value="Kullanıcı Güncelleme">Kullanıcı Güncelleme</option>
+                <option value="Kullanıcı Silme">Kullanıcı Silme</option>
+                <option value="Log Dışa Aktarma">Log Dışa Aktarma</option>
+                <option value="Mekansal Analiz">Alan Analizi Yapma</option>
+                <option value="Yetkisiz API Erişimi">Yetkisiz API Erişim Denemesi</option>
+                <option value="Sistem Hatası">Beklenmeyen Sistem Hataları</option>
+              </select>
+            </div>
+
+            <!-- Single Date Filter -->
+            <div class="filter-group">
+              <label for="singleDate">İşlem Tarihi</label>
+              <input type="date" id="singleDate" [(ngModel)]="singleDate">
+            </div>
+          </div>
+
+          <div class="filter-actions">
+            <button class="btn-reset" (click)="resetFilters()">Filtreleri Temizle</button>
+            <button class="btn-filter" (click)="applyFilters()">Logları Sorgula</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Logs Data Table Card -->
+      <section class="card table-card">
+        <div class="card-header">
+          <div class="header-left">
+            <span class="card-icon orange">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <path d="M4 14h6v-2H4v2zm0-4h6V8H4v2zm0 8h6v-2H4v2zm10-4h6v-2h-6v2zm0-4h6V8h-6v2zm0 8h6v-2h-6v2zM2 4v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2zm18 16H4V4h16v16z"/>
+              </svg>
+            </span>
+            <h3>Sistem Günlükleri Listesi</h3>
+          </div>
+          <div class="header-right-actions">
+            <!-- Excel / PDF Export Buttons -->
+            <div class="export-actions-group">
+              <button class="export-btn excel" (click)="downloadExcel()" [disabled]="isExportingExcel || isLoading" title="Excel Olarak İndir">
+                <svg *ngIf="!isExportingExcel" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2.83 14L14 12.83 11.83 17H9.24l3.52-5-3.52-5h2.59L14 11.17 16.17 7h2.59l-3.52 5 3.52 5h-2.59z" />
+                </svg>
+                <span *ngIf="isExportingExcel" class="btn-spinner"></span>
+                <span>{{ isExportingExcel ? 'Yükleniyor...' : 'Logları Excel İndir' }}</span>
+              </button>
+
+              <button class="export-btn pdf" (click)="downloadPdf()" [disabled]="isExportingPdf || isLoading" title="PDF Olarak İndir">
+                <svg *ngIf="!isExportingPdf" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4.5-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zm-8 1.5h-1v-2h1v2zm5 2h-1v-3h1v3zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z" />
+                </svg>
+                <span *ngIf="isExportingPdf" class="btn-spinner"></span>
+                <span>{{ isExportingPdf ? 'Yükleniyor...' : 'Logları PDF İndir' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table View -->
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>İşlem Açıklaması</th>
+                <th>Kullanıcı Adı</th>
+                <th>E-Posta</th>
+                <th>İşlem Tarihi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of logs; let idx = index">
+                <td>{{ idx + 1 }}</td>
+                <td class="bold-slate">
+                  <!-- Log tipine göre rozet/renk ata -->
+                  <span class="log-badge" 
+                    [class.success]="log.islem.includes('başarılı') || log.islem.includes('eklendi') || log.islem.includes('oluşturuldu')"
+                    [class.warning]="log.islem.includes('güncellendi')"
+                    [class.error]="log.islem.includes('başarısız') || log.islem.includes('silindi')">
+                    {{ log.islem }}
+                  </span>
+                </td>
+                <td>{{ log.kullaniciAdi }}</td>
+                <td class="text-muted">{{ log.userEmail || 'Sistem (Anonim)' }}</td>
+                <td class="text-muted">{{ log.tarih | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+              </tr>
+              <tr *ngIf="logs.length === 0 && !isLoading">
+                <td colspan="5" class="no-data">Eşleşen sistem log kaydı bulunamadı.</td>
+              </tr>
+              <tr *ngIf="isLoading">
+                <td colspan="5" class="loading-state">
+                  <div class="spinner-loader"></div>
+                  <span>Sistem günlükleri yükleniyor...</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="total-count">Toplam {{ logs.length }} log kaydı listelendi</span>
+        </div>
+      </section>
+      
+    </div>
+  </main>
+</div>
