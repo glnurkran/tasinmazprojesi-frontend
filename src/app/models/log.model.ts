@@ -5,4 +5,5 @@ export interface LogDto {
   userId: number;
   kullaniciAdi: string;
   userEmail?: string;
+  userIp?: string;
 }

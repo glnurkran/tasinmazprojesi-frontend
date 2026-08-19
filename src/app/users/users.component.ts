@@ -5,6 +5,8 @@ import { UserService } from '../services/user.service';
 import { AuthService } from '../services/auth.service';
 import { UserDto } from '../models/user.model';
 
+const PASSWORD_PATTERN = /^(?=.*[a-zçğıöşü])(?=.*[A-ZÇĞİÖŞÜ])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[^\s]{8,64}$/;
+
 @Component({
   selector: 'app-users',
   templateUrl: './users.component.html',
@@ -35,16 +37,16 @@ export class UsersComponent implements OnInit {
     this.isInfoAlertOpen = false;
   }
 
-  // Onay (Confirm) Dialog Durumları
+  // Custom Confirm Modal Dialog Durumları
   isConfirmModalOpen: boolean = false;
   confirmModalTitle: string = '';
   confirmModalMessage: string = '';
-  confirmCallback?: () => void;
+  confirmCallback: () => void = () => {};
 
-  openConfirmModal(title: string, message: string, callback: () => void): void {
+  openConfirmModal(title: string, message: string, onConfirm: () => void): void {
     this.confirmModalTitle = title;
     this.confirmModalMessage = message;
-    this.confirmCallback = callback;
+    this.confirmCallback = onConfirm;
     this.isConfirmModalOpen = true;
   }
 
@@ -61,9 +63,9 @@ export class UsersComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
+    private router: Router,
     private userService: UserService,
-    public authService: AuthService,
-    private router: Router
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -75,7 +77,7 @@ export class UsersComponent implements OnInit {
     this.userForm = this.fb.group({
       kullaniciAdi: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
-      sifre: [''],
+      sifre: ['', [Validators.pattern(PASSWORD_PATTERN)]],
       rol: ['User', Validators.required]
     });
   }
@@ -99,8 +101,8 @@ export class UsersComponent implements OnInit {
     this.selectedUserId = undefined;
     this.userForm.reset({ rol: 'User' });
     
-    // Ekleme modunda şifre alanı zorunlu olmalı (min 6 karakter veya backend regex)
-    this.userForm.get('sifre')?.setValidators([Validators.required, Validators.minLength(6)]);
+    // Ekleme modunda şifre alanı zorunlu olmalı ve desen gereksinimlerini sağlamalı
+    this.userForm.get('sifre')?.setValidators([Validators.required, Validators.pattern(PASSWORD_PATTERN)]);
     this.userForm.get('sifre')?.updateValueAndValidity();
     
     this.isModalOpen = true;
@@ -116,8 +118,8 @@ export class UsersComponent implements OnInit {
       rol: user.rol
     });
     
-    // Düzenleme modunda şifre alanını isteğe bağlı yap
-    this.userForm.get('sifre')?.clearValidators();
+    // Düzenleme modunda şifre alanı isteğe bağlı ancak girilirse desene uymak zorunda
+    this.userForm.get('sifre')?.setValidators([Validators.pattern(PASSWORD_PATTERN)]);
     this.userForm.get('sifre')?.updateValueAndValidity();
     
     this.isModalOpen = true;
@@ -193,6 +195,26 @@ export class UsersComponent implements OnInit {
         });
       }
     );
+  }
+
+  checkPasswordRequirement(rule: string): boolean {
+    const sifre = this.userForm?.get('sifre')?.value || '';
+    switch (rule) {
+      case 'length':
+        return sifre.length >= 8 && sifre.length <= 64;
+      case 'lowercase':
+        return /[a-zçğıöşü]/.test(sifre);
+      case 'uppercase':
+        return /[A-ZÇĞİÖŞÜ]/.test(sifre);
+      case 'digit':
+        return /\d/.test(sifre);
+      case 'special':
+        return /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(sifre);
+      case 'noSpace':
+        return sifre.length > 0 && !/\s/.test(sifre);
+      default:
+        return false;
+    }
   }
 
   logout(): void {

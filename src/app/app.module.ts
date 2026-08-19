@@ -11,6 +11,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { LogsComponent } from './logs/logs.component';
 import { UsersComponent } from './users/users.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { AnalizComponent } from './analiz/analiz.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
     RegisterComponent,
     DashboardComponent,
     LogsComponent,
-    UsersComponent
+    UsersComponent,
+    AnalizComponent
   ],
   imports: [
     BrowserModule,

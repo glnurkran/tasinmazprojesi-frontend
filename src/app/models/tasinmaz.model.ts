@@ -7,4 +7,5 @@ export interface TasinmazDto {
   ada: string;
   koordinatBilgisi: string;
   mahalleId: number;
+  userEmail?: string;
 }

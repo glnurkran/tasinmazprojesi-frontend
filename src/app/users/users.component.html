@@ -23,9 +23,9 @@
             <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
           </svg>
         </span>
-        <span>Mülklerim</span>
+        <span>Mülkler</span>
       </a>
-      <a routerLink="/dashboard" class="nav-item">
+      <a *ngIf="!authService.isAdmin()" routerLink="/analiz" routerLinkActive="active" class="nav-item">
         <span class="nav-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
@@ -76,11 +76,12 @@
           </svg>
           <span>Çıkış Yap</span>
         </button>
-        <button class="profile-btn" aria-label="Kullanıcı Profili">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+        <div class="user-profile-badge" style="background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="color: #64748b;">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
           </svg>
-        </button>
+          <span>{{ authService.getUserName() || 'Kullanıcı' }}</span>
+        </div>
       </div>
     </header>
 
@@ -220,7 +221,7 @@
 
         <!-- Şifre -->
         <div class="form-group">
-          <label for="modalSifre">ŞİFRE {{ isEditMode ? '(Değiştirmek İstemiyorsanız Boş Bırakın)' : '' }}</label>
+          <label for="modalSifre">ŞİFRE <span style="font-size: 11px; color: #64748b; font-weight: normal; text-transform: none;">(En az 8 karakter; 1 büyük, 1 küçük harf, 1 rakam ve 1 özel karakter)</span> {{ isEditMode ? '(Değiştirmek İstemiyorsanız Boş Bırakın)' : '' }}</label>
           <div class="input-wrapper" [class.invalid]="userForm.get('sifre')?.invalid && userForm.get('sifre')?.touched">
             <input 
               type="password" 
@@ -228,11 +229,59 @@
               formControlName="sifre" 
               placeholder="********">
           </div>
+          
+          <!-- Şifre Gereksinimleri Listesi -->
+          <div class="password-checklist-card" style="margin-top: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);">
+            
+            <div [style.color]="checkPasswordRequirement('length') ? '#16a34a' : '#64748b'" 
+                 [style.font-weight]="checkPasswordRequirement('length') ? '600' : '500'"
+                 style="font-size: 12px; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+              <span style="font-size: 14px; width: 14px; display: inline-flex; align-items: center; justify-content: center;">{{ checkPasswordRequirement('length') ? '✓' : '•' }}</span>
+              <span>En az 8, en fazla 64 karakter</span>
+            </div>
+
+            <div [style.color]="checkPasswordRequirement('lowercase') ? '#16a34a' : '#64748b'" 
+                 [style.font-weight]="checkPasswordRequirement('lowercase') ? '600' : '500'"
+                 style="font-size: 12px; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+              <span style="font-size: 14px; width: 14px; display: inline-flex; align-items: center; justify-content: center;">{{ checkPasswordRequirement('lowercase') ? '✓' : '•' }}</span>
+              <span>En az bir küçük harf (a-z, Türkçe harfler dahil)</span>
+            </div>
+
+            <div [style.color]="checkPasswordRequirement('uppercase') ? '#16a34a' : '#64748b'" 
+                 [style.font-weight]="checkPasswordRequirement('uppercase') ? '600' : '500'"
+                 style="font-size: 12px; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+              <span style="font-size: 14px; width: 14px; display: inline-flex; align-items: center; justify-content: center;">{{ checkPasswordRequirement('uppercase') ? '✓' : '•' }}</span>
+              <span>En az bir büyük harf (A-Z, Türkçe harfler dahil)</span>
+            </div>
+
+            <div [style.color]="checkPasswordRequirement('digit') ? '#16a34a' : '#64748b'" 
+                 [style.font-weight]="checkPasswordRequirement('digit') ? '600' : '500'"
+                 style="font-size: 12px; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+              <span style="font-size: 14px; width: 14px; display: inline-flex; align-items: center; justify-content: center;">{{ checkPasswordRequirement('digit') ? '✓' : '•' }}</span>
+              <span>En az bir rakam (0-9)</span>
+            </div>
+
+            <div [style.color]="checkPasswordRequirement('special') ? '#16a34a' : '#64748b'" 
+                 [style.font-weight]="checkPasswordRequirement('special') ? '600' : '500'"
+                 style="font-size: 12px; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+              <span style="font-size: 14px; width: 14px; display: inline-flex; align-items: center; justify-content: center;">{{ checkPasswordRequirement('special') ? '✓' : '•' }}</span>
+              <span>En az bir özel karakter (!@#$%^&*...)</span>
+            </div>
+
+            <div [style.color]="checkPasswordRequirement('noSpace') ? '#16a34a' : '#64748b'" 
+                 [style.font-weight]="checkPasswordRequirement('noSpace') ? '600' : '500'"
+                 style="font-size: 12px; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+              <span style="font-size: 14px; width: 14px; display: inline-flex; align-items: center; justify-content: center;">{{ checkPasswordRequirement('noSpace') ? '✓' : '•' }}</span>
+              <span>Boşluk içermemeli</span>
+            </div>
+
+          </div>
+
           <div class="error-msg" *ngIf="userForm.get('sifre')?.hasError('required') && userForm.get('sifre')?.touched">
             Yeni şifre alanı zorunludur.
           </div>
-          <div class="error-msg" *ngIf="userForm.get('sifre')?.hasError('minlength') && userForm.get('sifre')?.touched">
-            Şifre en az 6 karakter olmalıdır.
+          <div class="error-msg" *ngIf="userForm.get('sifre')?.hasError('pattern') && userForm.get('sifre')?.touched">
+            Şifre gereksinimlerini karşılamamaktadır.
           </div>
         </div>
 

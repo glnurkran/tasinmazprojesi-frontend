@@ -13,6 +13,15 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
+  private normalizeRole(role: unknown): string | null {
+    if (typeof role !== 'string') return null;
+
+    const normalized = role.trim().toLowerCase();
+    if (normalized === 'admin') return 'Admin';
+    if (normalized === 'user') return 'User';
+    return role.trim() || null;
+  }
+
   login(dto: LoginDto): Observable<any> {
     // Backend giriş başarılı olduğunda { token, rol } JSON nesnesi döndürür
     return this.http.post<any>(`${this.baseUrl}/login`, dto).pipe(
@@ -20,8 +29,9 @@ export class AuthService {
         if (res && res.token) {
           localStorage.setItem('token', res.token);
         }
-        if (res && res.rol) {
-          localStorage.setItem('role', res.rol);
+        const role = this.normalizeRole(res?.rol);
+        if (role) {
+          localStorage.setItem('role', role);
         }
       })
     );
@@ -48,7 +58,11 @@ export class AuthService {
     // Öncelikle localStorage üzerinden doğrudan rol kontrolü yapalım
     const cachedRole = localStorage.getItem('role');
     if (cachedRole) {
-      return cachedRole;
+      const normalizedRole = this.normalizeRole(cachedRole);
+      if (normalizedRole && normalizedRole !== cachedRole) {
+        localStorage.setItem('role', normalizedRole);
+      }
+      return normalizedRole;
     }
 
     // Fallback: Token içerisinden rol bilgisini çözme
@@ -69,7 +83,7 @@ export class AuthService {
 
       const payload = JSON.parse(jsonPayload);
       const roleKey = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
-      const role = payload[roleKey] || payload['role'] || null;
+      const role = this.normalizeRole(payload[roleKey] || payload['role'] || null);
       if (role) {
         localStorage.setItem('role', role); // Gelecekteki hızlı erişim için önbelleğe al
       }
@@ -82,5 +96,30 @@ export class AuthService {
 
   isAdmin(): boolean {
     return this.getUserRole() === 'Admin';
+  }
+
+  getUserName(): string | null {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+
+      // Base64URL decoding
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+
+      const payload = JSON.parse(jsonPayload);
+      const nameKey = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
+      return payload[nameKey] || payload['unique_name'] || payload['name'] || null;
+    } catch (e) {
+      console.error('Token ayrıştırma hatası:', e);
+      return null;
+    }
   }
 }

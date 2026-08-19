@@ -523,6 +523,17 @@
       flex-shrink: 0;
     }
 
+    &.import-excel {
+      background-color: #eff6ff;
+      border-color: #bfdbfe;
+      color: #1d4ed8;
+
+      &:hover:not(:disabled) {
+        background-color: #dbeafe;
+        border-color: #93c5fd;
+      }
+    }
+
     &.excel {
       background-color: #f0fdf4;
       border-color: #bbf7d0;
@@ -661,8 +672,7 @@
   }
 
   .action-cell {
-    display: flex;
-    gap: 8px;
+    text-align: left;
   }
 
   .action-btn {

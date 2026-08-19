@@ -14,9 +14,10 @@ import OSM from 'ol/source/OSM';
 import { fromLonLat, toLonLat } from 'ol/proj';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
+import Polygon from 'ol/geom/Polygon';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
-import { Style, Icon } from 'ol/style';
+import { Style, Icon, Stroke, Fill } from 'ol/style';
 
 import { Router } from '@angular/router';
 
@@ -24,8 +25,10 @@ import { Router } from '@angular/router';
 import { TasinmazService } from '../services/tasinmaz.service';
 import { IlIlceMahalleService } from '../services/il-ilce-mahalle.service';
 import { AuthService } from '../services/auth.service';
+import { MapManagerService } from '../services/map-manager.service';
 import { TasinmazDto } from '../models/tasinmaz.model';
 import { IlDto, IlceDto, MahalleDto } from '../models/il-ilce-mahalle.model';
+import { TasinmazResim } from '../models/tasinmaz-resim.model';
 
 export interface Property {
   id: number;
@@ -40,6 +43,7 @@ export interface Property {
   lng: number;
   address: string;
   mahalleId: number;
+  userEmail?: string;
 }
 
 @Component({
@@ -50,6 +54,15 @@ export interface Property {
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   // Properties List
   properties: Property[] = [];
+  selectedPropertyIds: number[] = [];
+
+
+
+  // Optional Photo Upload (during Tasinmaz Add)
+  optionalPhotoFile: File | null = null;
+  optionalPhotoPreview: string | null = null;
+
+  isBulkDeleteConfirmOpen: boolean = false;
 
   // Coğrafi Veri Listeleri
   illerList: IlDto[] = [];
@@ -68,18 +81,21 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   // OpenLayers Main Map State
   mainMap!: Map;
   mainView!: View;
+  mainBaseLayer!: TileLayer<any>;
   mainVectorSource!: VectorSource;
   mainVectorLayer!: VectorLayer<VectorSource>;
 
   // OpenLayers Mini Map State (Modal)
   miniMap: Map | null = null;
   miniView: View | null = null;
+  miniBaseLayer: TileLayer<any> | null = null;
   miniVectorSource: VectorSource | null = null;
   miniVectorLayer: VectorLayer<VectorSource> | null = null;
 
   // Map & Popup State
   selectedProperty: Property | null = null;
   popupOverlayCoordinate: number[] | null = null;
+  showLayerPanel = false;
 
   // Search
   searchQuery: string = '';
@@ -103,6 +119,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isExportingExcel: boolean = false;
   isExportingPdf: boolean = false;
+  isImportingExcel: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -110,7 +127,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     private geoService: IlIlceMahalleService,
     public authService: AuthService,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    public mapManager: MapManagerService
   ) {}
 
   logout(): void {
@@ -333,6 +351,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Taşınmazları API'den çeker ve frontend modelleriyle eşleştirir
   loadProperties(): void {
+    this.selectedPropertyIds = [];
     this.tasinmazService.getAll().subscribe({
       next: (res) => {
         this.properties = res.map(p => {
@@ -371,16 +390,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             lat: lat,
             lng: lng,
             address: p.adres,
-            mahalleId: p.mahalleId
+            mahalleId: p.mahalleId,
+            userEmail: (p as any).userEmail || (p as any).UserEmail || (p as any).email || '-'
           };
         });
 
         this.updateMainMapFeatures();
 
-        // Varsayılan ilk taşınmaza odaklan
+        // Varsayılan ilk taşınmaza odaklan (zoom yapmadan)
         if (this.properties.length > 0) {
           setTimeout(() => {
-            this.selectProperty(this.properties[0]);
+            this.selectProperty(this.properties[0], false);
           }, 300);
         }
       },
@@ -445,17 +465,22 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       maxZoom: 19
     });
 
+    this.mainBaseLayer = new TileLayer({
+      source: this.mapManager.createBaseSource(this.mapManager.baseLayerType)
+    });
+
     this.mainMap = new Map({
       target: 'main-map',
       layers: [
-        new TileLayer({
-          source: new OSM()
-        }),
+        this.mainBaseLayer,
         this.mainVectorLayer
       ],
       view: this.mainView,
       controls: []
     });
+
+    // Apply settings from MapManager (Base map type, visibility, opacity, ScaleLine)
+    this.mapManager.applyMapSettings(this.mainMap, this.mainBaseLayer, this.mainVectorLayer);
 
     this.mainMap.on('click', (evt) => {
       let found = false;
@@ -475,13 +500,25 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.updateMainMapFeatures();
   }
 
+  // Create property boundaries Polygon
+  createPropertyPolygon(lng: number, lat: number): Polygon {
+    const dLat = 0.0004; // ~40m
+    const dLng = 0.0006; // ~50m
+    const p1 = fromLonLat([lng - dLng, lat - dLat]);
+    const p2 = fromLonLat([lng + dLng, lat - dLat]);
+    const p3 = fromLonLat([lng + dLng, lat + dLat]);
+    const p4 = fromLonLat([lng - dLng, lat + dLat]);
+    return new Polygon([[p1, p2, p3, p4, p1]]);
+  }
+
   // Main Map Pin Refresh
   updateMainMapFeatures(): void {
     if (!this.mainVectorSource) return;
     this.mainVectorSource.clear();
 
     this.properties.forEach(p => {
-      const feature = new Feature({
+      // 1. Point Marker feature
+      const markerFeature = new Feature({
         geometry: new Point(fromLonLat([p.lng, p.lat])),
         property: p
       });
@@ -492,7 +529,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       
       const pinSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="36" height="36" fill="${fillHex}"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`;
 
-      feature.setStyle(new Style({
+      markerFeature.setStyle(new Style({
         image: new Icon({
           src: pinSvg,
           scale: scale,
@@ -500,7 +537,29 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         })
       }));
 
-      this.mainVectorSource.addFeature(feature);
+      // 2. Polygon Boundary feature
+      const polygonGeom = this.createPropertyPolygon(p.lng, p.lat);
+      const polygonFeature = new Feature({
+        geometry: polygonGeom,
+        property: p
+      });
+
+      const strokeColor = isSelected ? '#ef4444' : '#1e88e5';
+      const strokeWidth = isSelected ? 3 : 2;
+      const fillColor = isSelected ? 'rgba(239, 68, 68, 0.2)' : 'rgba(30, 136, 229, 0.2)';
+
+      polygonFeature.setStyle(new Style({
+        stroke: new Stroke({
+          color: strokeColor,
+          width: strokeWidth
+        }),
+        fill: new Fill({
+          color: fillColor
+        })
+      }));
+
+      this.mainVectorSource.addFeature(polygonFeature);
+      this.mainVectorSource.addFeature(markerFeature);
     });
   }
 
@@ -536,6 +595,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       }));
 
       this.miniVectorSource.addFeature(markerFeature);
+
       this.miniVectorLayer = new VectorLayer({
         source: this.miniVectorSource
       });
@@ -547,17 +607,22 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         maxZoom: 19
       });
 
+      this.miniBaseLayer = new TileLayer({
+        source: this.mapManager.createBaseSource(this.mapManager.baseLayerType)
+      });
+
       this.miniMap = new Map({
         target: 'mini-map',
         layers: [
-          new TileLayer({
-            source: new OSM()
-          }),
+          this.miniBaseLayer,
           this.miniVectorLayer
         ],
         view: this.miniView,
         controls: []
       });
+
+      // Apply MapManager settings (visibility, base layer type, opacity, scale line)
+      this.mapManager.applyMapSettings(this.miniMap, this.miniBaseLayer, this.miniVectorLayer);
 
       this.miniMap.on('click', (evt) => {
         const coords = toLonLat(evt.coordinate);
@@ -581,9 +646,54 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.miniVectorSource && this.miniView) {
       const features = this.miniVectorSource.getFeatures();
       if (features.length > 0) {
-        features[0].setGeometry(new Point(fromLonLat([lng, lat])));
+        features.forEach((feat: any) => {
+          const geom = feat.getGeometry();
+          if (geom instanceof Point) {
+            feat.setGeometry(new Point(fromLonLat([lng, lat])));
+          }
+        });
       }
       this.miniView.setCenter(fromLonLat([lng, lat]));
+    }
+  }
+
+  // Layer control panel helper methods
+  toggleLayerPanel(): void {
+    this.showLayerPanel = !this.showLayerPanel;
+  }
+
+  changeBaseLayer(type: 'osm' | 'google'): void {
+    this.mapManager.baseLayerType = type;
+    this.mapManager.saveSettings();
+    this.applyCurrentMapSettings();
+  }
+
+  changeVectorOpacity(event: any): void {
+    const val = Number(event.target.value) / 100;
+    this.mapManager.vectorOpacity = val;
+    this.mapManager.saveSettings();
+    this.applyCurrentMapSettings();
+  }
+
+  toggleBaseLayerVisible(): void {
+    this.mapManager.baseLayerVisible = !this.mapManager.baseLayerVisible;
+    this.mapManager.saveSettings();
+    this.applyCurrentMapSettings();
+  }
+
+  toggleVectorLayerVisible(): void {
+    this.mapManager.vectorLayerVisible = !this.mapManager.vectorLayerVisible;
+    this.mapManager.saveSettings();
+    this.applyCurrentMapSettings();
+  }
+
+  applyCurrentMapSettings(): void {
+    if (this.mainMap && this.mainBaseLayer) {
+      this.mapManager.applyMapSettings(this.mainMap, this.mainBaseLayer, this.mainVectorLayer);
+      this.updateMainMapFeatures();
+    }
+    if (this.miniMap && this.miniBaseLayer) {
+      this.mapManager.applyMapSettings(this.miniMap, this.miniBaseLayer, this.miniVectorLayer);
     }
   }
 
@@ -601,19 +711,20 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       p.ada.includes(query) ||
       p.parsel.includes(query) ||
       p.nitelik.toLowerCase().includes(query) ||
-      p.address.toLowerCase().includes(query)
+      p.address.toLowerCase().includes(query) ||
+      (p.userEmail && p.userEmail.toLowerCase().includes(query))
     );
   }
 
   // Select Pin & Focus Map
-  selectProperty(property: Property): void {
+  selectProperty(property: Property, shouldAnimate: boolean = true): void {
     this.selectedProperty = property;
     this.updateMainMapFeatures();
     
-    if (this.mainView) {
-      this.mainView.animate({
-        center: fromLonLat([property.lng, property.lat]),
-        zoom: 18,
+    if (shouldAnimate && this.mainView) {
+      const polygonGeom = this.createPropertyPolygon(property.lng, property.lat);
+      this.mainView.fit(polygonGeom.getExtent(), {
+        padding: [80, 80, 80, 80],
         duration: 1000
       });
     }
@@ -655,6 +766,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Delete Action Trigger
   openDeleteConfirm(property: Property): void {
+    if (this.authService.isAdmin()) {
+      this.openInfoAlert('Yetkisiz İşlem', 'Yöneticiler (Admin) taşınmaz silemez.');
+      return;
+    }
     this.propertyToDelete = property;
     this.isDeleteConfirmOpen = true;
   }
@@ -665,6 +780,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   confirmDelete(): void {
+    if (this.authService.isAdmin()) {
+      this.closeDeleteConfirm();
+      return;
+    }
     if (this.propertyToDelete) {
       const id = this.propertyToDelete.id;
       this.tasinmazService.delete(id).subscribe({
@@ -687,6 +806,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Add/Edit Modal Control
   openAddModal(): void {
+    if (this.authService.isAdmin()) {
+      this.openInfoAlert('Yetkisiz İşlem', 'Yöneticiler (Admin) yeni taşınmaz ekleyemez.');
+      return;
+    }
+    this.clearOptionalPhoto();
     this.isEditMode = false;
     this.editingId = null;
     
@@ -714,6 +838,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openEditModal(property: Property): void {
+    if (this.authService.isAdmin()) {
+      this.openInfoAlert('Yetkisiz İşlem', 'Yöneticiler (Admin) taşınmaz düzenleyemez.');
+      return;
+    }
     this.isEditMode = true;
     this.editingId = property.id;
     
@@ -749,6 +877,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   closeModal(): void {
+    this.clearOptionalPhoto();
     this.isModalOpen = false;
     this.isEditMode = false;
     this.editingId = null;
@@ -762,6 +891,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Form submit (Add or Update)
   async onSubmit(): Promise<void> {
+    if (this.authService.isAdmin()) {
+      this.openInfoAlert('Yetkisiz İşlem', 'Yöneticiler (Admin) taşınmaz ekleyemez veya güncelleyemez.');
+      return;
+    }
     if (this.propertyForm.invalid) {
       this.propertyForm.markAllAsTouched();
       
@@ -806,11 +939,28 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
       if (this.isEditMode && this.editingId !== null) {
         dto.id = this.editingId;
-        this.tasinmazService.update(this.editingId, dto).subscribe({
+        const targetId = this.editingId;
+        this.tasinmazService.update(targetId, dto).subscribe({
           next: () => {
-            this.loadProperties();
-            this.openInfoAlert('Başarılı', 'Taşınmaz başarıyla güncellendi.');
-            this.closeModal();
+            if (this.optionalPhotoFile) {
+              this.tasinmazService.uploadImage(targetId, this.optionalPhotoFile).subscribe({
+                next: () => {
+                  this.loadProperties();
+                  this.openInfoAlert('Başarılı', 'Taşınmaz ve fotoğrafı başarıyla güncellendi.');
+                  this.closeModal();
+                },
+                error: (err) => {
+                  console.error(err);
+                  this.loadProperties();
+                  this.openInfoAlert('Bilgi', 'Taşınmaz güncellendi ancak fotoğrafı yüklenirken bir hata oluştu.');
+                  this.closeModal();
+                }
+              });
+            } else {
+              this.loadProperties();
+              this.openInfoAlert('Başarılı', 'Taşınmaz başarıyla güncellendi.');
+              this.closeModal();
+            }
           },
           error: (err) => {
             console.error(err);
@@ -820,9 +970,25 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       } else {
         this.tasinmazService.add(dto).subscribe({
           next: (res) => {
-            this.loadProperties();
-            this.openInfoAlert('Başarılı', 'Taşınmaz başarıyla eklendi.');
-            this.closeModal();
+            if (this.optionalPhotoFile) {
+              this.tasinmazService.uploadImage(res.id!, this.optionalPhotoFile).subscribe({
+                next: () => {
+                  this.loadProperties();
+                  this.openInfoAlert('Başarılı', 'Taşınmaz ve fotoğrafı başarıyla eklendi.');
+                  this.closeModal();
+                },
+                error: (err) => {
+                  console.error(err);
+                  this.loadProperties();
+                  this.openInfoAlert('Bilgi', 'Taşınmaz eklendi ancak fotoğrafı yüklenirken bir hata oluştu.');
+                  this.closeModal();
+                }
+              });
+            } else {
+              this.loadProperties();
+              this.openInfoAlert('Başarılı', 'Taşınmaz başarıyla eklendi.');
+              this.closeModal();
+            }
           },
           error: (err) => {
             console.error(err);
@@ -913,149 +1079,199 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       .replace(/Ç/g, 'C');
   }
 
-  // Excel Dışa Aktar (Client-Side)
+  // Checkbox selection methods
+  togglePropertySelection(id: number, event: any): void {
+    if (event.target.checked) {
+      if (!this.selectedPropertyIds.includes(id)) {
+        this.selectedPropertyIds.push(id);
+      }
+    } else {
+      this.selectedPropertyIds = this.selectedPropertyIds.filter(item => item !== id);
+    }
+  }
+
+  isPropertySelected(id: number): boolean {
+    return this.selectedPropertyIds.includes(id);
+  }
+
+  toggleAllProperties(event: any): void {
+    if (event.target.checked) {
+      this.selectedPropertyIds = this.filteredProperties.map(p => p.id);
+    } else {
+      this.selectedPropertyIds = [];
+    }
+  }
+
+  isAllPropertiesSelected(): boolean {
+    if (this.filteredProperties.length === 0) return false;
+    return this.filteredProperties.every(p => this.selectedPropertyIds.includes(p.id));
+  }
+
+  // Excel Dışa Aktar (Backend-Side)
   exportToExcel(): void {
-    if (!this.filteredProperties || this.filteredProperties.length === 0) {
+    const ids = this.selectedPropertyIds.length > 0 
+      ? this.selectedPropertyIds 
+      : this.filteredProperties.map(p => p.id);
+
+    if (ids.length === 0) {
       this.openInfoAlert('Bilgi', 'Dışa aktarılacak taşınmaz kaydı bulunamadı.');
       return;
     }
 
     this.isExportingExcel = true;
-
-    try {
-      const dataToExport = this.filteredProperties.map((p, index) => ({
-        'Sıra No': index + 1,
-        'Taşınmaz Adı': p.isim,
-        'İl': p.province,
-        'İlçe': p.district,
-        'Mahalle': p.neighborhood,
-        'Ada': p.ada,
-        'Parsel': p.parsel,
-        'Nitelik': p.nitelik,
-        'Enlem (Lat)': p.lat,
-        'Boylam (Lng)': p.lng,
-        'Açık Adres': p.address
-      }));
-
-      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Taşınmazlar');
-
-      // Sütun genişliklerini otomatik ayarla
-      const colWidths = [
-        { wch: 8 },   // Sıra No
-        { wch: 25 },  // Taşınmaz Adı
-        { wch: 15 },  // İl
-        { wch: 15 },  // İlçe
-        { wch: 20 },  // Mahalle
-        { wch: 10 },  // Ada
-        { wch: 10 },  // Parsel
-        { wch: 12 },  // Nitelik
-        { wch: 15 },  // Enlem
-        { wch: 15 },  // Boylam
-        { wch: 35 }   // Açık Adres
-      ];
-      worksheet['!cols'] = colWidths;
-
-      XLSX.writeFile(workbook, `Tasinmazlar_${new Date().getTime()}.xlsx`);
-      this.openInfoAlert('Başarılı', 'Excel dosyası başarıyla indirildi.');
-    } catch (err) {
-      console.error(err);
-      this.openInfoAlert('Hata', 'Excel dosyası oluşturulurken hata oluştu.');
-    } finally {
-      this.isExportingExcel = false;
-    }
+    this.tasinmazService.exportExcel(ids).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Tasinmazlar_${new Date().getTime()}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        this.openInfoAlert('Başarılı', 'Excel dosyası başarıyla indirildi.');
+        this.isExportingExcel = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.openInfoAlert('Hata', 'Excel dosyası indirilirken bir hata oluştu.');
+        this.isExportingExcel = false;
+      }
+    });
   }
 
-  // PDF Dışa Aktar (Client-Side)
+  // PDF Dışa Aktar (Backend-Side)
   exportToPdf(): void {
-    if (!this.filteredProperties || this.filteredProperties.length === 0) {
+    const ids = this.selectedPropertyIds.length > 0 
+      ? this.selectedPropertyIds 
+      : this.filteredProperties.map(p => p.id);
+
+    if (ids.length === 0) {
       this.openInfoAlert('Bilgi', 'Dışa aktarılacak taşınmaz kaydı bulunamadı.');
       return;
     }
 
     this.isExportingPdf = true;
+    this.tasinmazService.exportPdf(ids).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Tasinmazlar_${new Date().getTime()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        this.openInfoAlert('Başarılı', 'PDF dosyası başarıyla indirildi.');
+        this.isExportingPdf = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.openInfoAlert('Hata', 'PDF dosyası indirilirken bir hata oluştu.');
+        this.isExportingPdf = false;
+      }
+    });
+  }
 
-    try {
-      const doc = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      // Rapor Başlığı
-      doc.setFontSize(18);
-      doc.setTextColor(30, 41, 59); // slate-800
-      doc.text('TASINMAZ KAYITLARI LISTESI', 14, 20);
-
-      doc.setFontSize(10);
-      doc.setTextColor(100, 116, 139); // slate-500
-      doc.text(`Olusturulma Tarihi: ${new Date().toLocaleString()}`, 14, 26);
-      doc.text(`Toplam Kayit Sayisi: ${this.filteredProperties.length}`, 14, 31);
-
-      // Tablo Satırları (Türkçe karakterleri dönüştürerek)
-      const tableRows = this.filteredProperties.map((p, index) => [
-        index + 1,
-        this.replaceTurkishChars(p.isim),
-        this.replaceTurkishChars(p.province),
-        this.replaceTurkishChars(p.district),
-        this.replaceTurkishChars(p.neighborhood),
-        p.ada,
-        p.parsel,
-        this.replaceTurkishChars(p.nitelik),
-        `${p.lat}, ${p.lng}`,
-        this.replaceTurkishChars(p.address)
-      ]);
-
-      const headers = [
-        ['Sira No', 'Tasinmaz Adi', 'Il', 'Ilce', 'Mahalle', 'Ada', 'Parsel', 'Nitelik', 'Koordinat', 'Acik Adres']
-      ];
-
-      autoTable(doc, {
-        head: headers,
-        body: tableRows,
-        startY: 38,
-        theme: 'striped',
-        headStyles: {
-          fillColor: [30, 41, 59], // Slate-800
-          textColor: [255, 255, 255],
-          fontSize: 10,
-          fontStyle: 'bold',
-          halign: 'center'
-        },
-        bodyStyles: {
-          fontSize: 9,
-          valign: 'middle'
-        },
-        columnStyles: {
-          0: { cellWidth: 15, halign: 'center' }, // Sira No
-          1: { cellWidth: 35 },                  // Tasinmaz Adi
-          2: { cellWidth: 20 },                  // Il
-          3: { cellWidth: 20 },                  // Ilce
-          4: { cellWidth: 25 },                  // Mahalle
-          5: { cellWidth: 12, halign: 'center' }, // Ada
-          6: { cellWidth: 12, halign: 'center' }, // Parsel
-          7: { cellWidth: 20 },                  // Nitelik
-          8: { cellWidth: 35, halign: 'center' }, // Koordinat
-          9: { cellWidth: 'auto' }               // Acik Adres
-        },
-        margin: { top: 38, left: 14, right: 14, bottom: 15 },
-        didDrawPage: (data) => {
-          const pageCount = (doc as any).internal.getNumberOfPages();
-          doc.setFontSize(8);
-          doc.setTextColor(148, 163, 184); // Slate-400
-          const str = `Sayfa ${data.pageNumber} / ${pageCount}`;
-          doc.text(str, data.settings.margin.left, doc.internal.pageSize.height - 10);
-        }
-      });
-
-      doc.save(`Tasinmazlar_${new Date().getTime()}.pdf`);
-      this.openInfoAlert('Başarılı', 'PDF dosyası başarıyla indirildi.');
-    } catch (err) {
-      console.error(err);
-      this.openInfoAlert('Hata', 'PDF dosyası oluşturulurken hata oluştu.');
-    } finally {
-      this.isExportingPdf = false;
+  // Excel İçe Aktar (Import)
+  onExcelFileSelected(event: any): void {
+    if (this.authService.isAdmin()) {
+      this.openInfoAlert('Yetkisiz İşlem', 'Yöneticiler (Admin) taşınmaz içe aktaramaz.');
+      event.target.value = '';
+      return;
     }
+    const file: File = event.target.files?.[0];
+    if (!file) return;
+
+    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (ext !== '.xlsx' && ext !== '.xls') {
+      this.openInfoAlert('Hata', 'Sadece .xlsx ve .xls formatındaki Excel dosyalarını içe aktarabilirsiniz.');
+      event.target.value = '';
+      return;
+    }
+
+    this.isImportingExcel = true;
+    this.tasinmazService.importExcel(file).subscribe({
+      next: (res) => {
+        this.isImportingExcel = false;
+        event.target.value = '';
+        const msg = res.message || `${res.successCount || 0} adet taşınmaz başarıyla içe aktarıldı.`;
+        this.openInfoAlert('İçe Aktarma Başarılı', msg);
+        // Listeyi ve haritayı yeniden yükle
+        this.loadProperties();
+      },
+      error: (err) => {
+        this.isImportingExcel = false;
+        event.target.value = '';
+        console.error('Excel içe aktarma hatası:', err);
+        const errMsg = err.error?.message || err.error?.Message || 'Excel dosyası içe aktarılırken bir hata oluştu.';
+        this.openInfoAlert('Hata', errMsg);
+      }
+    });
+  }
+
+  // Optional Photo Upload Methods
+  onOptionalPhotoSelected(event: any): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 100 * 1024 * 1024) {
+      this.openInfoAlert('Hata', 'Dosya boyutu 100 MB\'tan büyük olamaz.');
+      return;
+    }
+
+    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (ext !== '.jpg' && ext !== '.jpeg' && ext !== '.png') {
+      this.openInfoAlert('Hata', 'Sadece .jpg, .jpeg veya .png formatında resim seçebilirsiniz.');
+      return;
+    }
+
+    this.optionalPhotoFile = file;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.optionalPhotoPreview = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearOptionalPhoto(): void {
+    this.optionalPhotoFile = null;
+    this.optionalPhotoPreview = null;
+  }
+
+  // Bulk Delete Confirmation Modals
+  openBulkDeleteConfirm(): void {
+    if (this.authService.isAdmin()) {
+      this.openInfoAlert('Yetkisiz İşlem', 'Yöneticiler (Admin) taşınmaz silemez.');
+      return;
+    }
+    this.isBulkDeleteConfirmOpen = true;
+  }
+
+  closeBulkDeleteConfirm(): void {
+    this.isBulkDeleteConfirmOpen = false;
+  }
+
+  confirmBulkDelete(): void {
+    if (this.authService.isAdmin()) {
+      this.closeBulkDeleteConfirm();
+      return;
+    }
+    if (this.selectedPropertyIds.length === 0) return;
+
+    this.tasinmazService.bulkDelete(this.selectedPropertyIds).subscribe({
+      next: () => {
+        this.openInfoAlert('Başarılı', 'Seçilen tüm taşınmazlar başarıyla silindi.');
+        this.selectedPropertyIds = [];
+        this.loadProperties();
+        this.closeBulkDeleteConfirm();
+      },
+      error: (err) => {
+        console.error(err);
+        this.openInfoAlert('Hata', 'Toplu silme işlemi gerçekleştirilemedi.');
+        this.closeBulkDeleteConfirm();
+      }
+    });
   }
 }
